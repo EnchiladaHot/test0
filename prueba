@@ -1,0 +1,63 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "requestMethod": "GET",
+        "url": "https://comtrade.un.org/api/get",
+        "options": {
+          "queryParametersUi": {
+            "parameter": [
+              { "name": "type", "value": "C" },
+              { "name": "freq", "value": "A" },
+              { "name": "px", "value": "HS" },
+              { "name": "ps", "value": "latest" },
+              { "name": "r", "value": "all" },
+              { "name": "p", "value": "all" },
+              { "name": "rg", "value": "all" },
+              { "name": "cc", "value": "1001" },
+              { "name": "fmt", "value": "json" }
+            ]
+          }
+        }
+      },
+      "name": "UN Comtrade API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [100, 200]
+    },
+    {
+      "parameters": {
+        "expression": "={{ JSON.parse($node[\"UN Comtrade API\"].json[\"dataset\"]) }}"
+      },
+      "name": "JSON Parse",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [300, 200]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "{{YOUR_GOOGLE_SHEET_ID}}",
+        "range": "Sheet1!A:C",
+        "options": {},
+        "values": "={{$node[\"JSON Parse\"].json}}"
+      },
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [500, 200]
+    }
+  ],
+  "connections": {
+    "UN Comtrade API": {
+      "main": [
+        [{ "node": "JSON Parse", "type": "main" }]
+      ]
+    },
+    "JSON Parse": {
+      "main": [
+        [{ "node": "Google Sheets", "type": "main" }]
+      ]
+    }
+  }
+}
