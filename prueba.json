@@ -1,63 +1,126 @@
 {
+  "name": "Trade Analysis with Groq",
   "nodes": [
     {
       "parameters": {
-        "requestMethod": "GET",
-        "url": "https://comtrade.un.org/api/get",
-        "options": {
-          "queryParametersUi": {
-            "parameter": [
-              { "name": "type", "value": "C" },
-              { "name": "freq", "value": "A" },
-              { "name": "px", "value": "HS" },
-              { "name": "ps", "value": "latest" },
-              { "name": "r", "value": "all" },
-              { "name": "p", "value": "all" },
-              { "name": "rg", "value": "all" },
-              { "name": "cc", "value": "1001" },
-              { "name": "fmt", "value": "json" }
-            ]
-          }
+        "url": "https://comtradeapi.un.org/data/v1/get/C/A/HS?reporterCode=842&period=2023&partnerCode=156&cmdCode=1001&flowCode=M&includeDesc=true&subscription-key=4b42f11e893b43cbb762ddd28e2c8641",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Prueba",
+              "value": "4b42f11e893b43cbb762ddd28e2c8641"
+            }
+          ]
         }
       },
       "name": "UN Comtrade API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [100, 200]
+      "position": [200, 160],
+      "id": "fab6fcb1-5d1b-4216-bf4a-7ba9368b565b"
     },
     {
       "parameters": {
-        "expression": "={{ JSON.parse($node[\"UN Comtrade API\"].json[\"dataset\"]) }}"
+        "options": {}
       },
       "name": "JSON Parse",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
-      "position": [300, 200]
+      "position": [400, 160],
+      "id": "ba26897b-6c5d-4e45-8b73-6c31702131ce"
     },
     {
       "parameters": {
         "authentication": "oAuth2",
-        "sheetId": "{{YOUR_GOOGLE_SHEET_ID}}",
+        "sheetId": "{{1JE7K_Pc5JGDdQYFnMU5s3ZNGQXu1n6-JcCV-M9LRPKw}}",
         "range": "Sheet1!A:C",
-        "options": {},
-        "values": "={{$node[\"JSON Parse\"].json}}"
+        "options": {}
       },
       "name": "Google Sheets",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 1,
-      "position": [500, 200]
+      "position": [600, 160],
+      "id": "8c64760a-8b1c-41f7-bce7-b96a78107fcc",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TyKtBsHk4t3HLh0V",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "method": "POST",
+        "authentication": "headerAuth",
+        "jsonParameters": true,
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_API_KEY_DE_GROQ"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "bodyParametersJson": {
+          "model": "mixtral-8x7b",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Eres un asistente experto en comercio exterior. Analiza los siguientes datos y proporciona información clave."
+            },
+            {
+              "role": "user",
+              "content": "{{JSON.stringify($json)}}"
+            }
+          ],
+          "temperature": 0.7
+        }
+      },
+      "name": "Groq AI Assistant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [800, 160],
+      "id": "groq-node"
     }
   ],
   "connections": {
     "UN Comtrade API": {
       "main": [
-        [{ "node": "JSON Parse", "type": "main" }]
+        [
+          {
+            "node": "JSON Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "JSON Parse": {
       "main": [
-        [{ "node": "Google Sheets", "type": "main" }]
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Groq AI Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
   }
 }
